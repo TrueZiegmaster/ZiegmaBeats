@@ -6,6 +6,6 @@
   "MAX_PLAYLIST_SIZE": 200,
   "PRUNING": false,
   "LOCALE": "ru",
-  "STAY_TIME": 30,
+  "STAY_TIME": 300,
   "DEFAULT_VOLUME": 100
 }
