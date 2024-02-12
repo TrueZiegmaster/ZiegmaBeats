@@ -17,6 +17,7 @@ import { config } from "../utils/config";
 import { i18n } from "../utils/i18n";
 import { MissingPermissionsException } from "../utils/MissingPermissionsException";
 import { MusicQueue } from "./MusicQueue";
+import srServer from "../utils/srServer";
 
 export class Bot {
   public readonly prefix = "/";
@@ -39,6 +40,8 @@ export class Bot {
     this.client.on("error", console.error);
 
     this.onInteractionCreate();
+
+    srServer(config.MAIN_GUILD);
   }
 
   private async registerSlashCommands() {

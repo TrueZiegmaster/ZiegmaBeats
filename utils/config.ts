@@ -8,6 +8,9 @@ try {
 } catch (error) {
   config = {
     TOKEN: process.env.TOKEN || "",
+    MAIN_GUILD: process.env.MAIN_GUILD || "",
+    SR_AUTH_TOKEN: process.env.SR_AUTH_TOKEN || "",
+    SR_USER_ID: parseInt(process.env.SR_USER_ID!) || null,
     MAX_PLAYLIST_SIZE: parseInt(process.env.MAX_PLAYLIST_SIZE!) || 10,
     PRUNING: process.env.PRUNING === "true" ? true : false,
     STAY_TIME: parseInt(process.env.STAY_TIME!) || 30,

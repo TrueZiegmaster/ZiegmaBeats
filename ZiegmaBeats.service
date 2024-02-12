@@ -1,0 +1,14 @@
+[Unit]
+Description=ZiegmaBeats Disord Bot
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+WorkingDirectory=/var/www/html/ZiegmaBeats
+ExecStart=/usr/bin/env node dist/index.js
+
+[Install]
+WantedBy=multi-user.target

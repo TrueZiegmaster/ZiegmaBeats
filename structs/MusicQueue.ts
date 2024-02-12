@@ -29,15 +29,16 @@ export class MusicQueue {
   public readonly textChannel: TextChannel;
   public readonly bot = bot;
 
+  public srMode: boolean = false;
   public resource: AudioResource;
   public songs: Song[] = [];
   public volume = config.DEFAULT_VOLUME || 100;
   public loop = false;
   public muted = false;
   public waitTimeout: NodeJS.Timeout | null;
+  private stopped = false;
   private queueLock = false;
   private readyLock = false;
-  private stopped = false;
 
   public constructor(options: QueueOptions) {
     Object.assign(this, options);
@@ -93,7 +94,13 @@ export class MusicQueue {
           this.songs.push(this.songs.shift()!);
         } else {
           this.songs.shift();
-          if (!this.songs.length) return this.stop();
+          if (!this.songs.length) {
+            if (this.srMode) {
+              this.processQueue();
+            } else {
+              return this.stop();
+            }
+          }
         }
 
         if (this.songs.length || this.resource.audioPlayer) this.processQueue();
@@ -123,6 +130,40 @@ export class MusicQueue {
     this.processQueue();
   }
 
+  public async enqueueSR() {
+    await fetch(`https://api.streamersonglist.com/v1/streamers/${config.SR_USER_ID}/queue`)
+      .then(async (response) => {
+        if (response.status === 200) {
+          const data = await response.json();
+          const sr = data["list"].pop();
+          if (sr) {
+            await fetch(`https://api.streamersonglist.com/v1/streamers/${config.SR_USER_ID}/queue/${sr.id}/played`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${config.SR_AUTH_TOKEN}`
+              }
+            })
+              .then(async (response) => {
+                if (response.status === 201) {
+                  let srSong;
+                  try {
+                    srSong = await Song.from(sr["note"], sr["note"]);
+                    if (this.waitTimeout !== null) clearTimeout(this.waitTimeout);
+                    this.waitTimeout = null;
+                    this.stopped = false;
+                    this.songs.unshift(srSong);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+              })
+              .catch(console.error);
+          }
+        }
+      })
+      .catch(console.error);
+  }
+
   public stop() {
     if (this.stopped) return;
 
@@ -131,7 +172,9 @@ export class MusicQueue {
     this.songs = [];
     this.player.stop();
 
-    !config.PRUNING && this.textChannel.send(i18n.__("play.queueEnded")).catch(console.error);
+    if (!this.srMode) {
+      !config.PRUNING && this.textChannel.send(i18n.__("play.queueEnded")).catch(console.error);
+    }
 
     if (this.waitTimeout !== null) return;
 
@@ -150,6 +193,11 @@ export class MusicQueue {
   public async processQueue(): Promise<void> {
     if (this.queueLock || this.player.state.status !== AudioPlayerStatus.Idle) {
       return;
+    }
+
+    // Check for SR before playing next song from the queue
+    if (this.srMode) {
+      await this.enqueueSR();
     }
 
     if (!this.songs.length) {
