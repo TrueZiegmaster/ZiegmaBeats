@@ -5,6 +5,13 @@ import youtube, { Video } from "youtube-sr";
 import { bot } from "..";
 import { AudioPlayerStatus } from "@discordjs/voice";
 
+function getVideoId(query: string) {
+  const re =
+    /(https?:\/\/)?(((m|music|www)\.)?(youtube(-nocookie)?|youtube.googleapis)\.com.*(v\/|v=|vi=|vi\/|e\/|embed\/|user\/.*\/u\/\d+\/)|youtu\.be\/)([_0-9a-z-]+)/i;
+  const match = query.match(re);
+  return match ? match[8] : "";
+}
+
 export default {
   data: new SlashCommandBuilder()
     .setName("song_request")
@@ -12,15 +19,23 @@ export default {
     .addStringOption((option) =>
       option.setName("song").setDescription(i18n.__mf("song_request.song")).setRequired(true)
     ),
-  cooldown: 10,
+  cooldown: 3,
   async execute(interaction: ChatInputCommandInteraction) {
     const query = interaction.options.getString("song")!;
 
     youtube
-      .getVideo(query)
+      .getVideo(`https://www.youtube.com/watch?v=${getVideoId(query)}`)
       .catch(() => youtube.search(query, { type: "video", limit: 1 }))
       .then((result: Video | Video[]) => {
-        const song: Video = result instanceof Array ? result[0] : result;
+        let song: Video;
+        if (result instanceof Array) {
+          if (result.length === 0) {
+            return interaction.reply({ content: "Ничего не найдено!", ephemeral: true }).catch(console.error);
+          }
+          song = result[0];
+        } else {
+          song = result;
+        }
         fetch(`https://api.streamersonglist.com/v1/streamers/${config.SR_USER_ID}/queue`, {
           method: "POST",
           headers: {
@@ -33,7 +48,7 @@ export default {
             requests: [
               {
                 amount: 0,
-                name: interaction.member?.user.username
+                name: `${interaction.member?.user.username}(${interaction.member?.user.id})`
               }
             ]
           })
@@ -58,17 +73,17 @@ export default {
               interaction.reply({ embeds: [embed] }).catch(console.error);
             } else {
               console.error(response);
-              interaction.reply({ content: "Ошибка при обработке запроса", ephemeral: true }).catch(console.error);
+              interaction.reply({ content: "Ошибка при обработке запроса!", ephemeral: true }).catch(console.error);
             }
           })
           .catch((e) => {
             console.error(e);
-            interaction.reply({ content: "Ошибка при обработке запроса", ephemeral: true }).catch(console.error);
+            interaction.reply({ content: "Ошибка при обработке запроса!", ephemeral: true }).catch(console.error);
           });
       })
       .catch((e) => {
         console.error(e);
-        interaction.reply({ content: "Ошибка при обработке запроса", ephemeral: true }).catch(console.error);
+        interaction.reply({ content: "Ошибка при обработке запроса!", ephemeral: true }).catch(console.error);
       });
   }
 };

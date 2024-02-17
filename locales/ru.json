@@ -183,5 +183,13 @@
   "song_request": {
     "description": "Заказать музыку на стриме",
     "song": "Ссылка или название трека"
+  },
+  "song_remove": {
+    "description": "Отменить заказ трека",
+    "song_id": "Код трека"
+  },
+  "restart": {
+    "description": "Перезагрузить бота",
+    "restarting": "Перезагрузка..."
   }
 }

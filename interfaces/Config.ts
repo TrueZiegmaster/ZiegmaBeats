@@ -8,4 +8,5 @@ export interface Config {
   STAY_TIME: number;
   DEFAULT_VOLUME: number;
   LOCALE: string;
+  RESTART_COMMAND: string;
 }

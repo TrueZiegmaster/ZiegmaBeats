@@ -135,7 +135,7 @@ export class MusicQueue {
       .then(async (response) => {
         if (response.status === 200) {
           const data = await response.json();
-          const sr = data["list"].pop();
+          const sr = data["list"].shift();
           if (sr) {
             await fetch(`https://api.streamersonglist.com/v1/streamers/${config.SR_USER_ID}/queue/${sr.id}/played`, {
               method: "POST",

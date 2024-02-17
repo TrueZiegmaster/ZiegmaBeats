@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from "discord.js";
 import { i18n } from "../utils/i18n";
 import { MusicQueue } from "../structs/MusicQueue";
 import { DiscordGatewayAdapterCreator, joinVoiceChannel } from "@discordjs/voice";
@@ -10,7 +10,7 @@ export default {
     .setDescription(i18n.__mf("sr.description"))
     .addBooleanOption((option) => option.setName("mode").setDescription(i18n.__mf("sr.mode")).setRequired(true))
     .addUserOption((option) => option.setName("user").setDescription(i18n.__mf("sr.user")).setRequired(false)),
-  cooldown: 10,
+  cooldown: 3,
   async execute(interaction: ChatInputCommandInteraction) {
     const mode: boolean = interaction.options.getBoolean("mode")!;
     const user = interaction.options.getUser("user");

@@ -7,5 +7,6 @@
   "PRUNING": false,
   "LOCALE": "ru",
   "STAY_TIME": 300,
-  "DEFAULT_VOLUME": 100
+  "DEFAULT_VOLUME": 100,
+  "RESTART_COMMAND": ""
 }
